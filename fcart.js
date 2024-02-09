@@ -4,7 +4,7 @@ const dataHandler = require('./mobile.json'); // Assuming the file is in the sam
 let cart = require('./cart.json') || []; // Initialize cart with the content of cart.json or as an empty array if the file doesn't exist
 const app = express();
 // const port = 5000;
-var post=process.env.PORT||2410
+var port=process.env.PORT||5000
 let admindata = [{
   email: 'admin@test.com',
   password: 'admin123', // Replace with the actual password
@@ -13,10 +13,9 @@ let admindata = [{
 {
   email: 'test@gmail.com',
   password: 'test123', // Replace with the actual password
-  role: 'user' 
+  role: 'user'  
 }
 ];
-
 
 app.use(express.json());
 app.use(function (req, res, next) {
@@ -139,7 +138,55 @@ app.post('/admin/login', (req, res) => {
   }
 });
 
+// ... (your existing code)
 
+app.get('/cart', (req, res) => {
+  res.json(cart);
+});
+
+// ... (your existing code)
+
+// ... (your existing code)
+
+app.post('/addProduct', (req, res) => {
+  const newProduct = req.body;
+
+  // Validate the input data (Add your own validation logic as needed)
+  if (!newProduct || Object.keys(newProduct).length === 0) {
+    return res.status(400).json({ error: 'Invalid input data' });
+  }
+
+  // Generate a unique 3-digit ID for the new product
+  newProduct.id = generateUniqueThreeDigitId();
+
+  // Add the new product to your dataHandler (Assuming you have an array to store products)
+  dataHandler.push(newProduct);
+
+  // Write the updated data to the mobile.json file or your data storage
+  fs.writeFile('./mobile.json', JSON.stringify(dataHandler), (err) => {
+    if (err) {
+      return res.status(500).json({ error: 'Failed to update data' });
+    }
+
+    res.json({ message: 'Product added successfully', product: newProduct });
+  });
+});
+// ... (your existing code)
+
+// app.listen(port, () => {
+//   console.log(`Server is running on port ${port}`);
+// });
+function generateUniqueThreeDigitId() {
+  // Generate a random 3-digit number
+  const randomId = Math.floor(100 + Math.random() * 900);
+
+  // Check if the generated ID already exists, if yes, generate again
+  if (dataHandler.some((product) => product.id === randomId.toString())) {
+    return generateUniqueThreeDigitId();
+  }
+
+  return randomId.toString();
+}
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
